@@ -20,7 +20,7 @@ case class InitializeOrder(amount: Double)
 case class ProcessOrder()
 
 object DomainModelPrototype extends CompletableApp(1) {
-  val orderType = "com.example.domainmodel.Order"
+  val orderType = "com.example.Order"
 
   val model = DomainModel("OrderProcessing")
 
