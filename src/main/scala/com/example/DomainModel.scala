@@ -22,6 +22,38 @@ case class ProcessOrder()
 object DomainModelPrototype extends CompletableApp(1) {
 }
 
+object DomainModel {
+  def apply(name: String): DomainModel = {
+    new DomainModel(name)
+  }
+}
+
+class DomainModel(name: String) {
+  val aggregateTypeRegistry = scala.collection.mutable.Map[String, AggregateType]()
+  val system = ActorSystem(name)
+
+  def aggregateOf(typeName: String, id: String): AggregateRef = {
+    if (aggregateTypeRegistry.contains(typeName)) {
+      val aggregateType = aggregateTypeRegistry(typeName)
+      aggregateType.cacheActor ! RegisterAggregateId(id)
+      AggregateRef(id, aggregateType.cacheActor)
+    } else {
+      throw new IllegalStateException(s"DomainModel type registry does not have a $typeName")
+    }
+  }
+
+  def registerAggregateType(typeName: String): Unit = {
+    if (!aggregateTypeRegistry.contains(typeName)) {
+      val actorRef = system.actorOf(Props(classOf[AggregateCache], typeName), typeName)
+      aggregateTypeRegistry(typeName) = AggregateType(actorRef)
+    }
+  }
+
+  def shutdown() = {
+    system.shutdown()
+  }
+}
+
 class AggregateCache(typeName: String) extends Actor {
   val aggregateClass: Class[Actor] = Class.forName(typeName).asInstanceOf[Class[Actor]]
   val aggregateIds = scala.collection.mutable.Set[String]()
