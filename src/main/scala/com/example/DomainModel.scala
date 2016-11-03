@@ -20,6 +20,23 @@ case class InitializeOrder(amount: Double)
 case class ProcessOrder()
 
 object DomainModelPrototype extends CompletableApp(1) {
+  val orderType = "com.example.domainmodel.Order"
+
+  val model = DomainModel("OrderProcessing")
+
+  model.registerAggregateType(orderType)
+
+  val order = model.aggregateOf(orderType, "123")
+
+  order ! InitializeOrder(249.95)
+
+  order ! ProcessOrder()
+
+  awaitCompletion
+
+  model.shutdown()
+
+  println("DomainModelPrototype: is completed.")
 }
 
 object DomainModel {
