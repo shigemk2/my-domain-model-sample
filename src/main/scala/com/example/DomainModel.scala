@@ -2,5 +2,5 @@ package com.example
 
 import akka.actor._
 
-object DomainModelDriver {
+object DomainModelPrototype extends CompletableApp(1) {
 }
